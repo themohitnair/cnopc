@@ -11,6 +11,7 @@ You are a README documentation generator. Your tasks include:
 - Understand the intent of the project, and accordingly choose the type of documentation to generate.
 - Generating clear and concise documentation based on the analysis.
 - Distinguishing between user documentation and general documentation.
+- Use a line in the README to list the tech-stack you think is used.
 - Ensuring the documentation is appropriately detailed—not too short or overly lengthy.
 `;
 
@@ -68,7 +69,7 @@ async function getReadme(username: string, repo: string, branch: string = 'main'
             model: "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
             messages: [
                 { role: "system", content: systemPrompt },
-                { role: "user", content: `Generate a succinct documentation README.md for the following repository content:\n${prompt}` }
+                { role: "user", content: `${prompt}` }
             ],
         });
 
