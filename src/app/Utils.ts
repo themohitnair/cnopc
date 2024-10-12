@@ -1,20 +1,21 @@
 import Together from "together-ai";
 import axios from "axios";
-import * as dotenv from "dotenv";
 import { encode } from "gpt-3-encoder"; 
+import * as dotenv from "dotenv";
 
+// Load environment variables from the .env file
 dotenv.config();
 
-if (!process.env.TOGETHER_API_KEY) {
+const TogetherAPIKey: string = process.env.TOGETHER_API_KEY || '';
+const GHToken: string = process.env.GITHUB_ACCESS_TOKEN || '';
+
+if (!TogetherAPIKey) {
     throw new Error('TOGETHER_API_KEY is not defined in the environment');
 }
 
-if (!process.env.GITHUB_ACCESS_TOKEN) {
+if (!GHToken) {
     throw new Error('GITHUB_ACCESS_TOKEN is not defined in the environment');
 }
-
-const TogetherAPIKey: string = process.env.TOGETHER_API_KEY;
-const GHToken: string = process.env.GITHUB_ACCESS_TOKEN;
 
 const together = new Together({ apiKey: TogetherAPIKey });
 
@@ -33,7 +34,7 @@ You are a README documentation generator. Your tasks include:
 - Ensuring the documentation is appropriately detailed—not too short or overly lengthy.
 `;
 
-async function shouldExclude(path: string): Promise<boolean> {
+export async function shouldExclude(path: string): Promise<boolean> {
     return (
         EXCLUDED_DIRECTORIES.some(dir => path.startsWith(dir)) ||
         EXCLUDED_FILENAMES.includes(path.split('/').pop() || "") ||
@@ -41,7 +42,7 @@ async function shouldExclude(path: string): Promise<boolean> {
     );
 }
 
-async function getRepoCode({ owner, reponame, branch = "main" }: { owner: string; reponame: string; branch?: string }): Promise<Record<string, string>> {
+export async function getRepoCode({ owner, reponame, branch = "main" }: { owner: string; reponame: string; branch?: string }): Promise<Record<string, string>> {
     const treeUrl = `https://api.github.com/repos/${owner}/${reponame}/git/trees/${branch}?recursive=1`;
     const headers = { Authorization: `token ${GHToken}` };
 
@@ -84,7 +85,7 @@ async function getRepoCode({ owner, reponame, branch = "main" }: { owner: string
     }
 }
 
-async function generateReadme(fileContents: Record<string, string>): Promise<string> {
+export async function generateReadme(fileContents: Record<string, string>): Promise<string> {
     const prompt = Object.entries(fileContents)
         .map(([path, content]) => `Path: ${path}\nContent:\n${content}\n`)
         .join('\n');
