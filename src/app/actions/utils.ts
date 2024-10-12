@@ -1,13 +1,11 @@
+// app/actions/githubActions.ts
+"use server"
+
 import Together from "together-ai";
-import axios from "axios";
-import { encode } from "gpt-3-encoder"; 
-import * as dotenv from "dotenv";
+import { encode } from "gpt-3-encoder";
 
-// Load environment variables from the .env file
-dotenv.config();
-
-const TogetherAPIKey: string = process.env.TOGETHER_API_KEY || '';
-const GHToken: string = process.env.GITHUB_ACCESS_TOKEN || '';
+const TogetherAPIKey = process.env.TOGETHER_API_KEY;
+const GHToken = process.env.GITHUB_ACCESS_TOKEN;
 
 if (!TogetherAPIKey) {
     throw new Error('TOGETHER_API_KEY is not defined in the environment');
@@ -34,7 +32,7 @@ You are a README documentation generator. Your tasks include:
 - Ensuring the documentation is appropriately detailed—not too short or overly lengthy.
 `;
 
-export async function shouldExclude(path: string): Promise<boolean> {
+async function shouldExclude(path: string): Promise<boolean> {
     return (
         EXCLUDED_DIRECTORIES.some(dir => path.startsWith(dir)) ||
         EXCLUDED_FILENAMES.includes(path.split('/').pop() || "") ||
@@ -42,23 +40,25 @@ export async function shouldExclude(path: string): Promise<boolean> {
     );
 }
 
-export async function getRepoCode({ owner, reponame, branch = "main" }: { owner: string; reponame: string; branch?: string }): Promise<Record<string, string>> {
+async function getRepoCode({ owner, reponame, branch = "main" }: { owner: string; reponame: string; branch?: string }): Promise<Record<string, string>> {
     const treeUrl = `https://api.github.com/repos/${owner}/${reponame}/git/trees/${branch}?recursive=1`;
     const headers = { Authorization: `token ${GHToken}` };
 
     try {
-        const treeResponse = await axios.get(treeUrl, { headers });
-        const files = treeResponse.data.tree;
+        const treeResponse = await fetch(treeUrl, { headers });
+        const treeData = await treeResponse.json();
+        const files = treeData.tree;
 
         const fileContents: Record<string, string> = {};
         let totalTokens = 0;
 
         for (const file of files) {
             if (file.type === 'blob' && !(await shouldExclude(file.path))) {
-                const fileUrl = `https://api.github.com/repos/${owner}/${reponame}/git/blobs/${file.sha}`;
+                const fileUrl = `https://api.github.com/repos/${owner}/${reponame}/contents/${file.path}?ref=${branch}`;
                 try {
-                    const fileResponse = await axios.get(fileUrl, { headers });
-                    const content = Buffer.from(fileResponse.data.content, 'base64').toString('utf-8');
+                    const fileResponse = await fetch(fileUrl, { headers });
+                    const fileData = await fileResponse.json();
+                    const content = Buffer.from(fileData.content, 'base64').toString('utf-8');
                     const fileTokens = encode(content).length;
 
                     if (totalTokens + fileTokens > TOKEN_LIMIT) {
@@ -85,7 +85,7 @@ export async function getRepoCode({ owner, reponame, branch = "main" }: { owner:
     }
 }
 
-export async function generateReadme(fileContents: Record<string, string>): Promise<string> {
+async function generateReadme(fileContents: Record<string, string>): Promise<string> {
     const prompt = Object.entries(fileContents)
         .map(([path, content]) => `Path: ${path}\nContent:\n${content}\n`)
         .join('\n');
@@ -109,4 +109,14 @@ export async function generateReadme(fileContents: Record<string, string>): Prom
     }
 
     return messageContent;
+}
+
+export async function generateGitHubReadme(owner: string, reponame: string): Promise<string> {
+    try {
+        const fileContents = await getRepoCode({ owner, reponame });
+        return await generateReadme(fileContents);
+    } catch (error) {
+        console.error('Error generating README:', error);
+        throw new Error('Failed to generate README');
+    }
 }
