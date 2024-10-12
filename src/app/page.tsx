@@ -5,10 +5,6 @@ import Generate from "./Generate";
 import InputRepo from "./InputRepo";
 
 export default function Home() {
-  const handleGenerate = () => {
-    console.log('Generate clicked');
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-black">
       <div className="w-full max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
