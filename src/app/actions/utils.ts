@@ -1,4 +1,3 @@
-// app/actions/githubActions.ts
 "use server"
 
 import Together from "together-ai";
