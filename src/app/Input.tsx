@@ -1,15 +1,16 @@
-import React from 'react';
+import React, { InputHTMLAttributes } from 'react';
 
-interface InputProps {
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   placeholder: string;
 }
 
-const Input: React.FC<InputProps> = ({ placeholder }) => {
+const Input: React.FC<InputProps> = ({ placeholder, className, ...props }) => {
   return (
     <input
       type="text"
       placeholder={placeholder}
-      className="border border-[#171717] rounded-sm px-2 py-2 bg-background text-gray-200 outline-none focus:ring-0 focus:border-[#171717] flex-grow"
+      className={`w-full bg-gray-800 text-white placeholder-gray-500 outline-none text-lg px-4 py-2 rounded-md focus:ring-2 focus:ring-blue-500 transition-all duration-300 ${className}`}
+      {...props}
     />
   );
 }
