@@ -3,7 +3,7 @@ import "./globals.css";
 import Header from "./Header";
 
 export const metadata: Metadata = {
-  title: "Synopsi",
+  title: "cnopc",
   description: "README Generator",
 };
 
@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/favicon/synopsi.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon/cnopc.svg" type="image/svg+xml" />
       </head>
       <body className="font-geistmono text-foreground bg-background">
         <Header/>
