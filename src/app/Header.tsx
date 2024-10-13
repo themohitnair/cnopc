@@ -7,7 +7,7 @@ const Header: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <div className="flex-shrink-0">
-            <a href="/" className="text-4xl font-bold text-white hover:text-blue-400 transition-colors duration-300">
+            <a href="/" className="text-4xl text-white hover:text-blue-400 transition-colors duration-300">
               cnopc
             </a>
           </div>
